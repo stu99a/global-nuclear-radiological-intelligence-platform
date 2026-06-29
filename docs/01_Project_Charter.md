@@ -12,12 +12,21 @@
 | Item | Value |
 |------|-------|
 | Document | Project Charter |
-| Version | 1.0 |
-| Status | Approved |
+| Version | 0.1 |
+| Status | Draft |
+| Document ID | GNRIP-001 |
 | Project Owner | Josiah C. Mathew |
 | Repository | global-nuclear-radiological-intelligence-platform |
 | Last Updated | YYYY-MM-DD |
 | Next Review | Completion of Milestone 1 |
+
+---
+
+## Revision History
+
+| Version | Date | Description | Author |
+|----------|------|-------------|--------|
+| 0.1 | YYYY-MM-DD | Initial Draft | Josiah C. Mathew |
 
 ---
 
@@ -244,7 +253,26 @@ The project will be developed according to the following engineering principles:
 
 ---
 
-# 12. Expected Deliverables
+# 12. Non-Functional Requirements
+
+The platform shall satisfy the following non-functional requirements throughout its development lifecycle.
+
+| Requirement | Description |
+|-------------|-------------|
+| Maintainability | The system shall use a modular architecture with reusable collectors, processing modules, and database components to simplify maintenance and future enhancements. |
+| Scalability | New data sources shall be added without requiring major changes to the database schema or ETL pipeline. |
+| Reliability | Data collection failures shall be logged without terminating the entire collection process. |
+| Reproducibility | Every collected record shall be traceable to its original source, collection date, and processing stage. |
+| Transparency | Data transformations, cleaning procedures, and analytical assumptions shall be documented and reproducible. |
+| Data Quality | Duplicate detection, validation rules, and quality checks shall be applied throughout the ETL process. |
+| Performance | The platform shall efficiently process large collections of documents while supporting future expansion to additional data sources. |
+| Extensibility | The architecture shall support the integration of additional organizations, document formats, NLP modules, and analytical capabilities without significant redesign. |
+| Consistency | Naming conventions, controlled vocabularies, and data governance standards shall be applied across all project components. |
+| Portability | The platform shall run on a standard Python environment with documented dependencies and without requiring proprietary software. |
+
+---
+
+# 13. Expected Deliverables
 
 - Project Design Specification
 - Source Assessment
@@ -260,8 +288,13 @@ The project will be developed according to the following engineering principles:
 
 ---
 
-# Approval
+# 14. Documaent Approval
 
 This charter establishes the scope, objectives, governance principles, and development direction for the Global Nuclear & Radiological Intelligence Platform. All future architectural and implementation decisions should align with the objectives and design principles defined within this document.
 
+Prepared By:
+Josiah C. Mathew
+
+Approval Status:
+Draft
 ---
