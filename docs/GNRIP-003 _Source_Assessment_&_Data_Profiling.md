@@ -83,9 +83,9 @@ Future versions may incorporate:
 
 ---
 
-# 4. Source Profile — International Atomic Energy Agency (IAEA)
+# 4. Data Profiling Methodology
 
-Each source will be profiled using a representative sample of published documents.
+Each source shall be profiled using a representative sample of published documents.
 
 The objective is to determine which fields are consistently available, how reliably they can be extracted, and whether they provide analytical value to the platform.
 
@@ -113,6 +113,10 @@ Following data profiling, fields will be classified according to observed availa
 | Below 30% | Rare |
 
 Field classification provides guidance for schema design and ETL validation but does not automatically determine database constraints. Final implementation decisions will also consider analytical value and system requirements.
+
+---
+
+# 5. Source Profile — International Atomic Energy Agency (IAEA)
 
 ## Overview
 
@@ -178,7 +182,7 @@ HTML
 
 ---
 
-# 5. Source Profile — U.S. Nuclear Regulatory Commission (NRC)
+# 6. Source Profile — U.S. Nuclear Regulatory Commission (NRC)
 
 ## Overview
 
@@ -200,7 +204,15 @@ PDF Extraction
 
 ---
 
-### Expected Data Elements
+### Observed Data Elements
+
+| Field        | Availability | Consistency | Extractability | Analytical Value | Decision  |
+| ------------ | ------------ | ----------- | -------------- | ---------------- | --------- |
+| Event Number | 100%         | High        | Easy           | High             | Mandatory |
+| Event Date   | 100%         | High        | Easy           | High             | Mandatory |
+| Facility     | 100%         | High        | Easy           | High             | Mandatory |
+| Description  | 100%         | High        | Moderate       | High             | Mandatory |
+| State        | 100%         | High        | Easy           | Medium           | Expected  |
 
 * Event Number
 * Event Date
@@ -234,7 +246,7 @@ PDF Extraction
 
 ---
 
-# 6. Comparative Source Assessment
+# 7. Comparative Source Assessment
 
 | Characteristic       | IAEA            | NRC             |
 | -------------------- | --------------- | --------------- |
@@ -248,7 +260,7 @@ PDF Extraction
 
 ---
 
-# 7. Data Profiling Findings
+# 8. Data Profiling Findings
 
 The initial assessment indicates that Version 1 will require support for multiple document formats.
 
@@ -266,7 +278,7 @@ Key observations:
 
 ---
 
-# 8. Source Selection Decisions
+# 9. Source Selection Decisions
 
 The following decisions have been approved for Version 1.
 
@@ -280,7 +292,7 @@ The following decisions have been approved for Version 1.
 | Exclude Photo Essays            | Primarily visual content with limited analytical value.           |
 | Postpone INES                   | Reserved for Version 2 after Version 1 architecture is validated. |
 
-# Evidence-Based Design Decisions
+#  10. Evidence-Based Design Decisions
 
 The source assessment and data profiling activities directly support the subsequent design artifacts.
 
@@ -290,10 +302,10 @@ Specifically:
 - The Entity Relationship Diagram (ERD) will model only validated entities and relationships.
 - The SQL Schema will implement constraints based on measured field availability and analytical importance.
 - ETL validation rules will be derived from observed source characteristics rather than assumptions.
-- 
+  
 ---
 
-# 9. Conclusions
+# 11. Conclusions
 
 The assessed sources satisfy the project's requirements for authority, accessibility, analytical value, and maintainability.
 
