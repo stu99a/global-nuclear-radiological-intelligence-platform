@@ -36,7 +36,17 @@ The assessment also profiles the structure and characteristics of each source to
 
 ---
 
-# 2. Source Evaluation Criteria
+# 2. Source Assessment Methodology
+
+Each data source will be evaluated using a standardized assessment framework to ensure consistency across current and future integrations.
+
+The assessment consists of two complementary stages:
+
+1. **Source Assessment** – evaluates the suitability of the source from an architectural, legal, and analytical perspective.
+
+2. **Data Profiling** – evaluates the structure, quality, and usability of the data contained within the source.
+
+This methodology ensures that database design decisions are supported by measurable evidence rather than assumptions.
 
 Each source is evaluated using the following criteria.
 
@@ -75,6 +85,35 @@ Future versions may incorporate:
 
 # 4. Source Profile — International Atomic Energy Agency (IAEA)
 
+Each source will be profiled using a representative sample of published documents.
+
+The objective is to determine which fields are consistently available, how reliably they can be extracted, and whether they provide analytical value to the platform.
+
+Each candidate field will be evaluated using the following metrics.
+
+| Metric | Description |
+|---------|-------------|
+| Availability | Percentage of sampled documents containing the field. |
+| Consistency | Degree to which the field follows a consistent format or structure. |
+| Completeness | Degree to which the extracted value is complete and meaningful. |
+| Extractability | Difficulty of extracting the field using automated methods. |
+| Analytical Value | Contribution of the field to intelligence analysis and reporting. |
+
+The results of this assessment will guide the design of the operational database and Data Dictionary.
+
+## Field Classification Framework
+
+Following data profiling, fields will be classified according to observed availability.
+
+| Availability | Classification |
+|--------------|----------------|
+| 95–100% | Mandatory |
+| 70–94% | Expected |
+| 30–69% | Optional |
+| Below 30% | Rare |
+
+Field classification provides guidance for schema design and ETL validation but does not automatically determine database constraints. Final implementation decisions will also consider analytical value and system requirements.
+
 ## Overview
 
 The International Atomic Energy Agency publishes a wide range of information relating to nuclear safety, nuclear security, safeguards, technical cooperation, emergency preparedness, scientific research, and regulatory activities.
@@ -102,7 +141,7 @@ HTML
 
 ---
 
-### Expected Data Elements
+### Observed Data Elements
 
 * Title
 * Publication Date
@@ -209,7 +248,7 @@ PDF Extraction
 
 ---
 
-# 7. Data Profiling Summary
+# 7. Data Profiling Findings
 
 The initial assessment indicates that Version 1 will require support for multiple document formats.
 
@@ -241,6 +280,17 @@ The following decisions have been approved for Version 1.
 | Exclude Photo Essays            | Primarily visual content with limited analytical value.           |
 | Postpone INES                   | Reserved for Version 2 after Version 1 architecture is validated. |
 
+# Evidence-Based Design Decisions
+
+The source assessment and data profiling activities directly support the subsequent design artifacts.
+
+Specifically:
+
+- The Data Dictionary will use profiling results to determine mandatory, expected, optional, and derived fields.
+- The Entity Relationship Diagram (ERD) will model only validated entities and relationships.
+- The SQL Schema will implement constraints based on measured field availability and analytical importance.
+- ETL validation rules will be derived from observed source characteristics rather than assumptions.
+- 
 ---
 
 # 9. Conclusions
