@@ -163,10 +163,10 @@ A document may represent:
 - Press Release
 - Statement
 - Event Notification
-- Technical Report (future)
-- Guidance Document (future)
+- Technical Report (Future)
+- Guidance Document (Future)
 
-A document is **not** the operational event itself.
+A document is **not** the operational event itself. Instead, it serves as the information product that may describe zero, one, or many real-world operational events.
 
 ---
 
@@ -176,7 +176,7 @@ Derived from:
 
 - GNRIP-003 Source Assessment & Data Profiling
 
-Multiple publication types share common metadata suitable for normalization.
+Multiple publication types published by authoritative organizations share common metadata that can be standardized within a normalized data model.
 
 ---
 
@@ -186,38 +186,42 @@ Multiple publication types share common metadata suitable for normalization.
 |------|------|------|-------------|
 | document_id | INTEGER | No | Primary Key |
 | source_id | INTEGER | No | Foreign Key to Source |
-| document_type_id | INTEGER | No | Foreign Key to Document Type |
+| publication_type_id | INTEGER | No | Foreign Key to Publication Type |
 | title | TEXT | No | Document title |
-| summary | TEXT | Yes | Document summary |
+| summary | TEXT | Yes | Document summary or abstract |
 | body | TEXT | No | Full document text |
-| publication_date | DATE | No | Publication date |
+| publication_date | DATE | No | Official publication date |
 | url | TEXT | No | Original document URL |
 | language | TEXT | No | Publication language |
-| checksum | TEXT | No | Duplicate detection checksum |
+| checksum | TEXT | No | Hash used for duplicate detection |
 
 ---
 
 ## Relationships
 
-Document (Many) --------< Source (1)
+Source (1) --------< Document (Many)
+
+Publication Type (1) --------< Document (Many)
 
 Document (Many) --------< Document_Event >-------- Event (Many)
 
-Document (Many) --------< Category (Many)
+Document (Many) --------< Document_Category >-------- Category (Many)
 
-Document (Many) --------< Organization (Many)
+Document (Many) --------< Document_Organization >-------- Organization (Many)
 
-Document (Many) --------< Country (Many)
+Document (Many) --------< Document_Country >-------- Country (Many)
 
 ---
 
 ## Business Rules
 
-- Every document belongs to exactly one source.
+- Every document shall originate from exactly one source.
+- Every document shall belong to exactly one publication type.
 - A document may describe zero, one, or many operational events.
+- Multiple documents may describe the same operational event.
 - A document may belong to multiple analytical categories.
 - Only immutable business facts shall be stored within this entity.
-- ETL metadata shall be stored in operational entities.
+- Collection and processing metadata shall be stored within operational entities.
 
 ---
 
@@ -231,19 +235,11 @@ Document (Many) --------< Country (Many)
 
 ## Purpose
 
-Represents a discrete operational occurrence of intelligence significance.
+Represents a single real-world operational occurrence of intelligence significance.
 
-Examples include:
+An Event is independent of any individual publication and may be described by one or more Documents published by different authoritative organizations.
 
-- Reactor shutdown
-- Nuclear security incident
-- Radioactive source theft
-- Emergency response activation
-- Regulatory enforcement action
-- Security exercise
-- INES incident (future)
-
-Events represent real-world occurrences and are independent of any individual publication.
+Each Event shall be classified using exactly one Event Type, while the associated Documents may be classified under one or more Categories.
 
 ---
 
@@ -255,6 +251,8 @@ Derived from:
 - IAEA Operational Reporting
 - Future INES Integration
 
+These sources describe operational occurrences that can be normalized into a common event model while remaining independent of the publications that report them.
+
 ---
 
 ## Attributes
@@ -263,33 +261,127 @@ Derived from:
 |------|------|------|-------------|
 | event_id | INTEGER | No | Primary Key |
 | event_type_id | INTEGER | No | Foreign Key to Event Type |
-| event_reference | TEXT | Yes | Official event identifier |
-| event_date | DATE | No | Date of occurrence |
+| event_reference | TEXT | Yes | Official identifier assigned by the reporting authority (e.g., NRC Event Number, INES Event ID) |
+| event_date | DATE | No | Date on which the event occurred |
 | country_id | INTEGER | Yes | Foreign Key to Country |
 | facility_id | INTEGER | Yes | Foreign Key to Facility |
-| status | TEXT | No | Operational status |
-| description | TEXT | No | Event description |
+| status | TEXT | No | Operational status of the event |
+| description | TEXT | No | Standardized description of the operational occurrence |
 
 ---
 
 ## Relationships
 
-Event (Many) --------< Document_Event >-------- Document (Many)
+Document (Many) --------< Document_Event >-------- Event (Many)
 
-Event (Many) --------< Country (1)
+Event Type (1) --------< Event (Many)
 
-Event (Many) --------< Facility (1)
+Country (1) --------< Event (Many)
 
-Event (Many) --------< Event Type (1)
+Facility (1) --------< Event (Many)
 
 ---
 
 ## Business Rules
 
-- Events represent operational occurrences, not publications.
-- Multiple documents may describe the same event.
-- A single document may describe multiple events.
-- Severity shall not be stored until a standardized framework (e.g., INES) is adopted.
+- Every Event represents a single operational occurrence.
+- Every Event shall belong to exactly one Event Type.
+- Multiple Documents may describe the same Event.
+- A single Document may describe zero, one, or many Events.
+- Event Types classify **what occurred**, while Categories classify **the subject matter discussed within Documents**.
+- Operational severity shall not be stored until a standardized severity framework (e.g., INES) is implemented.
+- Collection and processing metadata shall not be stored within this entity.
+
+---
+
+## Examples
+
+Examples of individual Events include:
+
+- Unauthorized access to a nuclear facility.
+- Theft of a radioactive source during transport.
+- Reactor shutdown at a licensed facility.
+- Emergency response activation following a radiological incident.
+- Regulatory enforcement action issued against an operator.
+- Security exercise conducted at a nuclear installation.
+
+---
+
+### Future Considerations
+
+If future sources provide structured lifecycle information for operational events, the current `status` attribute may be migrated to a dedicated `Event History` entity to preserve temporal changes without altering the core Event model.
+
+---
+
+## Approval Status
+
+**Approved – Version 1**
+
+---
+
+# 4.4 Publication Type
+
+## Purpose
+
+Represents the classification of a published information product.
+
+The Publication Type entity provides a controlled vocabulary that standardizes the types of publications collected from authoritative sources. It ensures consistent classification across current and future data sources while preventing inconsistencies caused by free-text values.
+
+Examples include:
+
+- News
+- Press Release
+- Statement
+- Event Notification
+- Technical Report (Future)
+- Guidance Document (Future)
+
+---
+
+## Evidence
+
+Derived from:
+
+- GNRIP-003 Source Assessment & Data Profiling
+
+Version 1 sources publish multiple types of information products that require standardized classification.
+
+---
+
+## Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| publication_type_id | INTEGER | No | Primary Key |
+| publication_type_name | TEXT | No | Name of the publication type |
+
+---
+
+## Relationships
+
+Publication Type (1) --------< Document (Many)
+
+---
+
+## Business Rules
+
+- Every document shall belong to exactly one publication type.
+- Publication type names shall be unique.
+- Publication types shall be maintained as a controlled vocabulary.
+- New publication types may be added without requiring schema modifications.
+
+---
+
+## Initial Controlled Vocabulary
+
+| ID | Publication Type |
+|----|------------------|
+| 1 | News |
+| 2 | Press Release |
+| 3 | Statement |
+| 4 | Event Notification |
+| 5 | Technical Report *(Future)* |
+| 6 | Guidance Document *(Future)* |
 
 ---
 
