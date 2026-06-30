@@ -90,11 +90,13 @@ Entities are approved individually and become part of the controlled design base
 
 ---
 
-# 4. Approved Entities
+# 4. Data Model
 
 ---
+# 4.1 Core Domain Entities
+---
 
-# 4.1 Source
+# 4.1.1 Source
 
 ## Purpose
 
@@ -151,7 +153,7 @@ Source (1) --------< Collection Log (Many)
 
 ---
 
-# 4.2 Document
+# 4.1.2 Document
 
 ## Purpose
 
@@ -231,7 +233,7 @@ Document (Many) --------< Document_Country >-------- Country (Many)
 
 ---
 
-# 4.3 Event
+# 4.1.3 Event
 
 ## Purpose
 
@@ -319,7 +321,23 @@ If future sources provide structured lifecycle information for operational event
 
 ---
 
-# 4.4 Publication Type
+# 4.2 Reference Entities
+
+Reference entities provide controlled vocabularies used throughout the operational data model.
+
+Unlike core domain entities, reference entities contain standardized values that support data consistency, validation, querying, and analytics.
+
+Version 1 includes the following reference entities:
+
+- Publication Type
+- Event Type
+- Category
+
+Additional reference entities may be introduced in future versions where justified by new source requirements.
+
+---
+
+# 4.2.1 Publication Type
 
 ## Purpose
 
@@ -388,6 +406,194 @@ Publication Type (1) --------< Document (Many)
 ## Approval Status
 
 **Approved – Version 1**
+
+---
+
+# 4.2.2 Event Type
+
+## Purpose
+
+Represents the classification of an operational occurrence.
+
+The Event Type entity provides a controlled vocabulary that standardizes the types of operational events recorded within the platform. It classifies **what happened** during an Event and supports consistent reporting, querying, and analytical workflows.
+
+Examples include:
+
+- Unauthorized Access
+- Theft
+- Smuggling
+- Reactor Shutdown
+- Radiation Exposure
+- Emergency Response
+- Security Exercise
+- Regulatory Inspection
+- Enforcement Action
+
+---
+
+## Evidence
+
+Derived from:
+
+- GNRIP-003 Source Assessment & Data Profiling
+
+Version 1 operational sources (NRC Event Notifications and IAEA operational reporting) describe multiple classes of operational occurrences that require standardized classification.
+
+---
+
+## Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| event_type_id | INTEGER | No | Primary Key |
+| event_type_name | TEXT | No | Name of the event type |
+
+---
+
+## Relationships
+
+Parent Category (1)
+        │
+        ▼
+Child Category (Many)
+
+(Self-referencing hierarchy)
+
+Document (Many)
+        │
+        ▼
+Document_Category
+        │
+        ▼
+Category (Many)
+
+---
+
+## Business Rules
+
+- Every Event shall belong to exactly one Event Type.
+- Event Types classify operational occurrences.
+- Event Type names shall be unique.
+- Event Types shall be maintained as a controlled vocabulary.
+- New Event Types may be introduced without requiring schema modifications.
+
+---
+
+## Approved Controlled Vocabulary (Version 1)
+
+| ID | Event Type |
+|----|------------|
+| 1 | Unauthorized Access |
+| 2 | Theft |
+| 3 | Smuggling |
+| 4 | Reactor Shutdown |
+| 5 | Radiation Exposure |
+| 6 | Emergency Response |
+| 7 | Security Exercise |
+| 8 | Regulatory Inspection |
+| 9 | Enforcement Action |
+| 10 | Material Recovery |
+| 11 | Material Loss |
+
+---
+
+## Approval Status
+
+**Approved – Version 1**
+
+---
+
+4.2.3 Category
+
+## Purpose
+
+Represents the intelligence subject discussed within a published document.
+
+The Category entity provides a controlled vocabulary for classifying documents according to their primary intelligence domains. Categories support document organization, filtering, trend analysis, dashboarding, reporting, and future Natural Language Processing (NLP) workflows.
+
+Categories answer the question:
+
+> **"What is this publication about?"**
+
+Categories are independent of both Publication Type and Event Type.
+
+A document may belong to one or more Categories.
+
+---
+
+## Evidence
+
+Derived from:
+
+- GNRIP-003 Source Assessment & Data Profiling
+
+Current Version 1 sources contain publications covering multiple intelligence domains, including nuclear security, nuclear safety, safeguards, emergency preparedness, policy, research, and technical cooperation.
+
+---
+
+## Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| category_id | INTEGER | No | Primary Key |
+| category_name | TEXT | No | Name of the category |
+| parent_category_id | INTEGER | Yes | Self-referencing parent category |
+
+---
+
+## Relationships
+
+Category (1) --------< Category (Many)
+
+(Self-referencing hierarchy)
+
+Document (Many) --------< Document_Category >-------- Category (Many)
+
+---
+
+## Business Rules
+
+- Categories shall be maintained as a controlled vocabulary.
+- Categories classify the intelligence subject discussed within a Document.
+- Publication Types classify the type of publication.
+- Event Types classify the type of operational occurrence.
+- Categories may be organized hierarchically.
+- Root Categories shall have a NULL parent_category_id.
+- A Document may belong to one or more Categories.
+
+---
+
+## Future Considerations
+
+The controlled vocabulary, hierarchical structure, governance, and maintenance of Categories will be documented separately in:
+
+**GNRIP-009 – Intelligence Taxonomy**
+
+Separating taxonomy governance from database structure allows the taxonomy to evolve independently of the database schema.
+
+---
+
+## Approval Status
+
+**Approved – Version 1**
+
+---
+
+# 4.3 Pending Domain Entities
+
+  Country
+
+  Organization
+
+  Facility
+
+  Material
+
+# 4.4 Pending Operational Entities
+
+  Collection Log
+
+  Bridge Tables
 
 ---
 
