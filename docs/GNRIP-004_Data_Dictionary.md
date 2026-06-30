@@ -38,28 +38,54 @@ The document serves as the authoritative reference for the Entity Relationship D
 
 The platform separates its data model into two complementary layers.
 
-## Domain Layer
+A third group of entities, known as Reference Entities, provides controlled vocabularies that standardize classifications used throughout the domain model.
 
-The Domain Layer stores intelligence information representing real-world entities and relationships.
+## Core Domain Entities
+
+Core Domain Entities represent the primary intelligence concepts managed by the platform.
 
 Examples include:
 
 - Source
 - Document
 - Event
+
+These entities model real-world intelligence information and remain independent of implementation details.
+
+---
+
+## Master Data
+
+Master Data represents authoritative real-world entities that are shared across the platform.
+
+Examples include:
+
 - Country
 - Organization
 - Facility
 - Material
-- Category
 
-These entities model the intelligence domain and remain independent of implementation details.
+Master Data follows recognized standards where available and supports interoperability across the platform.
 
 ---
 
-## Operational Layer
+## Reference Data
 
-The Operational Layer stores metadata describing the collection, validation, and processing of intelligence information.
+Reference Data provides controlled vocabularies used to standardize classifications throughout the platform.
+
+Examples include:
+
+- Publication Type
+- Event Type
+- Category
+
+Reference Data promotes consistency, validation, and analytical reporting.
+
+---
+
+## Operational Data
+
+Operational Data stores metadata describing the collection, validation, processing, and maintenance of intelligence information.
 
 Examples include:
 
@@ -68,9 +94,7 @@ Examples include:
 - Data Quality Metrics
 - Processing Errors
 
-Operational entities describe **how** data was collected rather than **what** exists in the intelligence domain.
-
-This separation improves maintainability, extensibility, and long-term scalability.
+Operational Data describes **how** information is managed rather than **what** exists in the intelligence domain.
 
 ---
 
@@ -92,9 +116,7 @@ Entities are approved individually and become part of the controlled design base
 
 # 4. Data Model
 
----
 # 4.1 Core Domain Entities
----
 
 # 4.1.1 Source
 
@@ -343,7 +365,7 @@ Additional reference entities may be introduced in future versions where justifi
 
 Represents the classification of a published information product.
 
-The Publication Type entity provides a controlled vocabulary that standardizes the types of publications collected from authoritative sources. It ensures consistent classification across current and future data sources while preventing inconsistencies caused by free-text values.
+The entity provides a controlled vocabulary that standardizes the types of publications collected from authoritative sources. It ensures consistent classification across current and future data sources while preventing inconsistencies caused by free-text values.
 
 Examples include:
 
@@ -390,7 +412,7 @@ Publication Type (1) --------< Document (Many)
 
 ---
 
-## Initial Controlled Vocabulary
+## Approved Controlled Vocabulary (Version 1)
 
 | ID | Publication Type |
 |----|------------------|
@@ -415,7 +437,7 @@ Publication Type (1) --------< Document (Many)
 
 Represents the classification of an operational occurrence.
 
-The Event Type entity provides a controlled vocabulary that standardizes the types of operational events recorded within the platform. It classifies **what happened** during an Event and supports consistent reporting, querying, and analytical workflows.
+The entity provides a controlled vocabulary that standardizes the types of operational events recorded within the platform. It classifies **what happened** during an Event and supports consistent reporting, querying, and analytical workflows.
 
 Examples include:
 
@@ -452,20 +474,10 @@ Version 1 operational sources (NRC Event Notifications and IAEA operational repo
 
 ## Relationships
 
-Parent Category (1)
+Event Type (1)
         │
         ▼
-Child Category (Many)
-
-(Self-referencing hierarchy)
-
-Document (Many)
-        │
-        ▼
-Document_Category
-        │
-        ▼
-Category (Many)
+Event (Many)
 
 ---
 
@@ -503,13 +515,13 @@ Category (Many)
 
 ---
 
-4.2.3 Category
+# 4.2.3 Category
 
 ## Purpose
 
 Represents the intelligence subject discussed within a published document.
 
-The Category entity provides a controlled vocabulary for classifying documents according to their primary intelligence domains. Categories support document organization, filtering, trend analysis, dashboarding, reporting, and future Natural Language Processing (NLP) workflows.
+The entity provides a controlled vocabulary for classifying documents according to their primary intelligence domains. Categories support document organization, filtering, trend analysis, dashboarding, reporting, and future Natural Language Processing (NLP) workflows.
 
 Categories answer the question:
 
@@ -579,42 +591,184 @@ Separating taxonomy governance from database structure allows the taxonomy to ev
 
 ---
 
-# 4.3 Pending Domain Entities
+# 4.3 Master Data
 
-  Country
+## Purpose
 
-  Organization
+Master Data represents authoritative real-world entities that are shared across the platform.
 
-  Facility
+Unlike Reference Data, Master Data is governed by internationally recognized standards where available and serves as the foundation for operational processing, analytical reporting, and integration with external datasets.
 
-  Material
+The following Master Data entities are included within the Version 1 logical data model:
 
-# 4.4 Pending Operational Entities
-
-  Collection Log
-
-  Bridge Tables
+- Country *(Approved – Version 1)*
+- Organization *(Under Design)*
+- Facility *(Under Design)*
+- Material *(Under Design)*
 
 ---
 
-# 5. Pending Entities
+# 4.3.1 Country
 
-The following entities remain under design review:
+## Purpose
 
-- Country
-- Organization
-- Facility
-- Material
-- Category
-- Document Type
-- Event Type
-- Collection Log
-- Document_Event (Bridge Table)
-- Document_Category (Bridge Table)
-- Document_Organization (Bridge Table)
-- Document_Country (Bridge Table)
+Represents sovereign states and territories referenced within operational events and published documents.
 
-These entities will be reviewed individually before inclusion in the approved data model.
+The Country entity provides standardized geographic information that supports trend analysis, regional reporting, dashboard visualizations, and future integration with external datasets.
+
+Countries are treated as **Master Data** rather than simple lookup values to promote interoperability and data consistency.
+
+---
+
+## Evidence
+
+Derived from:
+
+- GNRIP-003 Source Assessment & Data Profiling
+
+Current Version 1 sources regularly reference countries in relation to operational events, facilities, regulatory activities, emergency response, and international cooperation.
+
+Future sources such as INES, NTI, DOE, and WINS are also expected to contain standardized country references.
+
+---
+
+## Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| country_id | INTEGER | No | Primary Key |
+| country_name | TEXT | No | Official country name |
+| iso2_code | TEXT | No | ISO 3166-1 Alpha-2 code |
+| iso3_code | TEXT | No | ISO 3166-1 Alpha-3 code |
+
+---
+
+## Relationships
+
+Country (1) --------< Event (Many)
+
+Country (Many) --------< Document_Country >-------- Document (Many)
+
+Country (1) --------< Facility (Many)
+
+---
+
+## Business Rules
+
+- Countries shall conform to the ISO 3166-1 international standard.
+- Country names shall be unique.
+- ISO Alpha-2 codes shall be unique.
+- ISO Alpha-3 codes shall be unique.
+- Every Facility shall belong to exactly one Country.
+- Documents may reference one or more Countries.
+- Events may reference one Country when applicable.
+
+---
+
+## Master Data Standard
+
+The Country entity shall use the ISO 3166-1 standard as the authoritative reference for country names and country codes.
+
+The dataset shall be maintained independently of operational data.
+
+---
+
+## Future Considerations
+
+Should future analytical requirements include regional reporting, the Country entity may be extended with additional standardized attributes such as:
+
+- UN Region
+- IAEA Regional Office
+- Geographic Coordinates (Country Centroid)
+
+These additions shall only be introduced when supported by analytical requirements.
+
+---
+
+## Approval Status
+
+**Approved – Version 1**
+
+---
+
+# 4.3.2 Organization
+
+*Under Design*
+
+---
+
+# 4.3.3 Facility
+
+*Under Design*
+
+---
+
+# 4.3.4 Material
+
+*Under Design*
+
+---
+
+# 4.4 Operational Data
+
+## Purpose
+
+Operational Data represents metadata describing the collection, validation, processing, and maintenance of intelligence information.
+
+Unlike Core Domain Entities and Master Data, Operational Data supports ETL workflows, auditing, traceability, and data governance without representing real-world intelligence concepts.
+
+The following operational entities are included within the Version 1 logical data model:
+
+- Collection Log *(Under Design)*
+
+---
+
+# 4.4.1 Collection Log
+
+*Under Design*
+
+---
+
+# 4.5 Relationship Tables
+
+## Purpose
+
+Relationship Tables implement many-to-many relationships between entities while maintaining database normalization and referential integrity.
+
+These tables contain relationship mappings only and do not represent standalone business concepts.
+
+The following relationship tables are included within the Version 1 logical data model:
+
+- Document_Event *(Under Design)*
+- Document_Category *(Under Design)*
+- Document_Country *(Under Design)*
+- Document_Organization *(Under Design)*
+
+Additional relationship tables may be introduced where justified by future analytical requirements.
+
+---
+
+# 4.5.1 Document_Event
+
+*Under Design*
+
+---
+
+# 4.5.2 Document_Category
+
+*Under Design*
+
+---
+
+# 4.5.3 Document_Country
+
+*Under Design*
+
+---
+
+# 4.5.4 Document_Organization
+
+*Under Design*
 
 ---
 
@@ -629,6 +783,7 @@ The Data Dictionary follows the engineering principles established for the proje
 5. Normalize where supported by evidence.
 6. Design for extensibility without speculative schema.
 7. Document architectural decisions before implementation.
+8. Controlled vocabularies shall be implemented using normalized reference entities rather than free-text attributes.
 
 ---
 
