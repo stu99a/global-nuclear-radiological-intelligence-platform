@@ -116,6 +116,8 @@ Entities are approved individually and become part of the controlled design base
 
 # 4. Data Model
 
+---
+
 # 4.1 Core Domain Entities
 
 # 4.1.1 Source
