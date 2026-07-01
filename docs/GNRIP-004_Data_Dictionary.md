@@ -2,6 +2,12 @@
 
 **Project:** Global Nuclear & Radiological Intelligence Platform
 
+## Scope
+
+This document defines the logical data model for the Global Nuclear & Radiological Intelligence Platform (GNRIP).
+
+It specifies the entities, attributes, relationships, and business rules required to support Version 1 of the platform. Physical database implementation details, indexing strategies, SQL data types, and ETL implementation are intentionally excluded and are documented separately within subsequent design specifications.
+
 ---
 
 # Document Information
@@ -11,9 +17,9 @@
 | Document | Data Dictionary |
 | Document ID | GNRIP-004 |
 | Version | 0.1 |
-| Status | Draft |
+| Status | Approved |
 | Author | Josiah C. Mathew |
-| Last Updated | YYYY-MM-DD |
+| Last Updated | 2026-07-01 |
 | Related Documents | GNRIP-001 Project Charter, GNRIP-002 Project Design Specification, GNRIP-003 Source Assessment & Data Profiling |
 
 ---
@@ -78,6 +84,10 @@ Examples include:
 - Publication Type
 - Event Type
 - Category
+- Organization Type
+- Facility Type
+- Material Class
+- File Format
 
 Reference Data promotes consistency, validation, and analytical reporting.
 
@@ -87,9 +97,12 @@ Reference Data promotes consistency, validation, and analytical reporting.
 
 Operational Data stores metadata describing the collection, validation, processing, and maintenance of intelligence information.
 
-Examples include:
+Version 1 currently includes:
 
 - Collection Log
+
+Future versions may introduce additional operational entities such as:
+
 - ETL Processing
 - Data Quality Metrics
 - Processing Errors
@@ -116,15 +129,13 @@ Entities are approved individually and become part of the controlled design base
 
 # 4. Data Model
 
+## 4.1 Core Domain Entities
 ---
-
-# 4.1 Core Domain Entities
-
-# 4.1.1 Source
+## 4.1.1 Source
 
 ## Purpose
 
-Represents an authoritative organization from which information is collected.
+Represents an authoritative information source from which documents are collected.
 
 Examples include:
 
@@ -169,6 +180,8 @@ Source (1) --------< Collection Log (Many)
 - A source may publish many documents.
 - ETL implementation details shall not be stored within this entity.
 
+If additional source classifications become necessary, Source Type may be normalized into a dedicated Reference Data entity.
+
 ---
 
 ## Approval Status
@@ -177,7 +190,7 @@ Source (1) --------< Collection Log (Many)
 
 ---
 
-# 4.1.2 Document
+## 4.1.2 Document
 
 ## Purpose
 
@@ -242,7 +255,7 @@ Document (Many) --------< Document_Country >-------- Country (Many)
 ## Business Rules
 
 - Every document shall originate from exactly one source.
-- Every document shall belong to exactly one publication type.
+- Every document shall originate from exactly one publication type.
 - A document may describe zero, one, or many operational events.
 - Multiple documents may describe the same operational event.
 - A document may belong to multiple analytical categories.
@@ -257,7 +270,7 @@ Document (Many) --------< Document_Country >-------- Country (Many)
 
 ---
 
-# 4.1.3 Event
+## 4.1.3 Event
 
 ## Purpose
 
@@ -290,10 +303,10 @@ These sources describe operational occurrences that can be normalized into a com
 | event_reference | TEXT | Yes | Official identifier assigned by the reporting authority (e.g., NRC Event Number, INES Event ID) |
 | event_date | DATE | No | Date on which the event occurred |
 | country_id | INTEGER | Yes | Foreign Key to Country |
-| facility_id | INTEGER | Yes | Foreign Key to Facility |
-| status | TEXT | No | Operational status of the event |
+| status | TEXT | No | Current operational status of the event |
 | description | TEXT | No | Standardized description of the operational occurrence |
 
+If multinational operational events become common, the relationship may be refactored into an Event_Country associative entity.
 ---
 
 ## Relationships
@@ -304,7 +317,9 @@ Event Type (1) --------< Event (Many)
 
 Country (1) --------< Event (Many)
 
-Facility (1) --------< Event (Many)
+Event (Many) --------< Event_Facility >-------- Facility (Many)
+
+Event (Many) --------< Event_Material >-------- Material (Many)
 
 ---
 
@@ -314,6 +329,9 @@ Facility (1) --------< Event (Many)
 - Every Event shall belong to exactly one Event Type.
 - Multiple Documents may describe the same Event.
 - A single Document may describe zero, one, or many Events.
+- An Event may involve one or more Facilities.
+- A Facility may be associated with multiple Events.
+- An Event may involve one or more Materials.
 - Event Types classify **what occurred**, while Categories classify **the subject matter discussed within Documents**.
 - Operational severity shall not be stored until a standardized severity framework (e.g., INES) is implemented.
 - Collection and processing metadata shall not be stored within this entity.
@@ -329,7 +347,7 @@ Examples of individual Events include:
 - Reactor shutdown at a licensed facility.
 - Emergency response activation following a radiological incident.
 - Regulatory enforcement action issued against an operator.
-- Security exercise conducted at a nuclear installation.
+- Security exercise conducted across one or more nuclear installations.
 
 ---
 
@@ -345,7 +363,7 @@ If future sources provide structured lifecycle information for operational event
 
 ---
 
-# 4.2 Reference Entities
+## 4.2 Reference Data
 
 Reference entities provide controlled vocabularies used throughout the operational data model.
 
@@ -353,15 +371,23 @@ Unlike core domain entities, reference entities contain standardized values that
 
 Version 1 includes the following reference entities:
 
+Version 1 includes the following Reference Data entities:
+
+Version 1 includes the following Reference Data entities:
+
 - Publication Type
 - Event Type
 - Category
+- Organization Type
+- Facility Type
+- Material Class
+- File Format
 
 Additional reference entities may be introduced in future versions where justified by new source requirements.
 
 ---
 
-# 4.2.1 Publication Type
+## 4.2.1 Publication Type
 
 ## Purpose
 
@@ -433,7 +459,7 @@ Publication Type (1) --------< Document (Many)
 
 ---
 
-# 4.2.2 Event Type
+## 4.2.2 Event Type
 
 ## Purpose
 
@@ -517,7 +543,7 @@ Event (Many)
 
 ---
 
-# 4.2.3 Category
+## 4.2.3 Category
 
 ## Purpose
 
@@ -593,7 +619,300 @@ Separating taxonomy governance from database structure allows the taxonomy to ev
 
 ---
 
-# 4.3 Master Data
+## 4.2.4 Organization Type
+
+## Purpose
+
+Represents the classification of organizations referenced within the platform.
+
+The Organization Type entity provides a controlled vocabulary that standardizes the classification of organizations involved in nuclear and radiological activities. It promotes consistency across documents, events, reporting, and analytical workflows.
+
+Examples include:
+
+- International Organization
+- Regulatory Authority
+- Nuclear Operator
+- Government Agency
+- Research Institution
+- University
+- Healthcare Institution
+- Private Company
+
+---
+
+## Evidence
+
+Derived from:
+
+- GNRIP-003 Source Assessment & Data Profiling
+
+Current Version 1 sources reference multiple categories of organizations that participate in regulatory oversight, nuclear operations, research, emergency response, healthcare, and international cooperation.
+
+Standardizing these classifications improves consistency and analytical reporting.
+
+---
+
+## Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| organization_type_id | INTEGER | No | Primary Key |
+| organization_type_name | TEXT | No | Name of the organization type |
+
+---
+
+## Relationships
+
+Organization Type (1) --------< Organization (Many)
+
+---
+
+## Business Rules
+
+- Every Organization shall belong to exactly one Organization Type.
+- Organization Types shall be maintained as a controlled vocabulary.
+- Organization Type names shall be unique.
+- New Organization Types may be introduced without requiring schema modifications.
+
+---
+
+## Approved Controlled Vocabulary (Version 1)
+
+| ID | Organization Type |
+|----|-------------------|
+| 1 | International Organization |
+| 2 | Regulatory Authority |
+| 3 | Government Agency |
+| 4 | Nuclear Operator |
+| 5 | Research Institution |
+| 6 | University |
+| 7 | Healthcare Institution |
+| 8 | Private Company |
+
+---
+
+## Approval Status
+
+**Approved – Version 1**
+
+---
+
+## 4.2.5 Facility Type
+
+## Purpose
+
+Represents the classification of facilities referenced within the platform.
+
+The Facility Type entity provides a controlled vocabulary that standardizes the classification of facilities involved in nuclear and radiological activities. It promotes consistency across documents, operational events, reporting, and analytical workflows.
+
+Examples include:
+
+- Nuclear Power Plant
+- Research Reactor
+- Fuel Fabrication Facility
+- Radioactive Waste Storage Facility
+- Nuclear Research Laboratory
+- Uranium Processing Facility
+- Nuclear Medicine Facility
+- Enrichment Facility
+
+---
+
+## Evidence
+
+Derived from:
+
+- GNRIP-003 Source Assessment & Data Profiling
+
+Current Version 1 sources reference multiple categories of facilities associated with nuclear energy, research, medical applications, waste management, and regulatory activities.
+
+Standardizing these classifications improves data consistency and analytical reporting.
+
+---
+
+## Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| facility_type_id | INTEGER | No | Primary Key |
+| facility_type_name | TEXT | No | Name of the facility type |
+
+---
+
+## Relationships
+
+Facility Type (1) --------< Facility (Many)
+
+---
+
+## Business Rules
+
+- Every Facility shall belong to exactly one Facility Type.
+- Facility Types shall be maintained as a controlled vocabulary.
+- Facility Type names shall be unique.
+- New Facility Types may be introduced without requiring schema modifications.
+
+---
+
+## Approved Controlled Vocabulary (Version 1)
+
+| ID | Facility Type |
+|----|---------------|
+| 1 | Nuclear Power Plant |
+| 2 | Research Reactor |
+| 3 | Fuel Fabrication Facility |
+| 4 | Radioactive Waste Storage Facility |
+| 5 | Nuclear Research Laboratory |
+| 6 | Uranium Processing Facility |
+| 7 | Nuclear Medicine Facility |
+| 8 | Enrichment Facility |
+
+---
+
+## Approval Status
+
+**Approved – Version 1**
+
+---
+
+## 4.2.6 Material Class
+
+## Purpose
+
+Represents the scientific or regulatory classification of materials referenced within the platform.
+
+The Material Class entity provides a controlled vocabulary that standardizes the classification of nuclear and radiological materials while remaining consistent with internationally recognized terminology.
+
+Material Class identifies **what a material is**, rather than how it is used, packaged, transported, or encountered during an operational event.
+
+---
+
+## Evidence
+
+Derived from:
+
+- GNRIP-003 Source Assessment & Data Profiling
+- IAEA Nuclear Security Glossary (2020)
+- IAEA Safety Glossary (2018)
+
+Current and planned sources reference numerous materials used in nuclear energy, medicine, industry, research, safeguards, and emergency response.
+
+---
+
+## Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| material_class_id | INTEGER | No | Primary Key |
+| material_class_name | TEXT | No | Scientific or regulatory classification of the material |
+
+---
+
+## Relationships
+
+Material Class (1) --------< Material (Many)
+
+---
+
+## Business Rules
+
+- Every Material shall belong to exactly one Material Class.
+- Material Classes shall be maintained as a controlled vocabulary.
+- Material Class names shall be unique.
+- Material Classes classify the intrinsic nature of a material.
+- Operational context (e.g., sealed source, spent fuel) shall not be stored within this entity.
+
+---
+
+## Approved Controlled Vocabulary (Version 1)
+
+| ID | Material Class |
+|----|----------------|
+| 1 | Radioisotope |
+| 2 | Nuclear Material |
+| 3 | Nuclear Fuel |
+
+---
+
+## Future Considerations
+
+Should future analytical requirements justify additional scientific classifications, new Material Classes may be introduced without requiring schema modifications.
+
+Operational descriptors such as **Sealed Source**, **Unsealed Source**, **Spent Fuel**, and **Radioactive Waste** shall only be introduced as separate concepts when supported by structured source data.
+
+---
+
+# 4.2.7 File Format
+
+## Purpose
+
+Represents the format of content collected from external information sources.
+
+The File Format entity provides a controlled vocabulary that standardizes the formats processed by the platform during data collection. Standardizing file formats supports ETL workflows, validation, reporting, and future expansion to additional collection methods.
+
+Examples include:
+
+- HTML
+- PDF
+- RSS
+- JSON
+- XML
+
+---
+
+## Evidence
+
+Derived from:
+
+- GNRIP-003 Source Assessment & Data Profiling
+
+Current Version 1 sources publish information in multiple formats, including HTML web pages and PDF documents. Future integrations may include RSS feeds, JSON APIs, and XML-based data services.
+
+---
+
+## Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| file_format_id | INTEGER | No | Primary Key |
+| file_format_name | TEXT | No | Name of the file format |
+
+---
+
+## Relationships
+
+File Format (1) --------< Collection Log (Many)
+
+---
+
+## Business Rules
+
+- Every Collection Log shall reference exactly one File Format.
+- File Formats shall be maintained as a controlled vocabulary.
+- File Format names shall be unique.
+- New File Formats may be introduced without requiring schema modifications.
+
+---
+
+## Approved Controlled Vocabulary (Version 1)
+
+| ID | File Format |
+|----|-------------|
+| 1 | HTML |
+| 2 | PDF |
+| 3 | RSS |
+| 4 | JSON |
+| 5 | XML |
+
+---
+
+## Approval Status
+
+**Approved – Version 1**
+
+---
+
+## 4.3 Master Data
 
 ## Purpose
 
@@ -601,16 +920,16 @@ Master Data represents authoritative real-world entities that are shared across 
 
 Unlike Reference Data, Master Data is governed by internationally recognized standards where available and serves as the foundation for operational processing, analytical reporting, and integration with external datasets.
 
-The following Master Data entities are included within the Version 1 logical data model:
+Version 1 includes the following Master Data entities:
 
 - Country *(Approved – Version 1)*
-- Organization *(Under Design)*
-- Facility *(Under Design)*
-- Material *(Under Design)*
+- Organization *(Approved – Version 1)*
+- Facility *(Approved – Version 1)*
+- Material *(Approved – Version 1)*
 
 ---
 
-# 4.3.1 Country
+## 4.3.1 Country
 
 ## Purpose
 
@@ -693,25 +1012,202 @@ These additions shall only be introduced when supported by analytical requiremen
 
 ---
 
-# 4.3.2 Organization
+## 4.3.2 Organization
 
-*Under Design*
+## Purpose
 
----
+Represents organizations referenced within published documents or operational events.
 
-# 4.3.3 Facility
+Organizations include regulatory authorities, international organizations, nuclear operators, research institutions, government agencies, healthcare institutions, universities, and private companies relevant to the nuclear and radiological domain.
 
-*Under Design*
-
----
-
-# 4.3.4 Material
-
-*Under Design*
+Organizations are maintained as Master Data to promote consistent identification and analysis across multiple documents and events.
 
 ---
 
-# 4.4 Operational Data
+## Evidence
+
+Derived from:
+
+- GNRIP-003 Source Assessment & Data Profiling
+
+Current Version 1 sources reference numerous organizations in addition to the publishing authority. These organizations participate in operational events, regulatory oversight, research, emergency response, and international cooperation.
+
+---
+
+## Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| organization_id | INTEGER | No | Primary Key |
+| organization_name | TEXT | No | Official organization name |
+| organization_type_id | INTEGER | No | Foreign Key to Organization Type |
+| country_id | INTEGER | Yes | Foreign Key to Country |
+| website | TEXT | Yes | Official website |
+
+---
+
+## Relationships
+
+Organization Type (1) --------< Organization (Many)
+
+Country (1) --------< Organization (Many)
+
+Document (Many) --------< Document_Organization >-------- Organization (Many)
+
+Organization (1) --------< Facility (Many)
+
+---
+
+## Business Rules
+
+- Organization names shall be unique.
+- Every Organization shall belong to exactly one Organization Type.
+- An Organization may be be referenced by multiple Documents.
+- An Organization may own or operate multiple Facilities.
+- Country association is optional where not applicable.
+
+---
+
+## Approval Status
+
+**Approved – Version 1**
+
+---
+
+## 4.3.3 Facility 
+
+## Purpose
+
+Represents a physical installation or operational site referenced within published documents or operational events.
+
+Facilities include nuclear power plants, research reactors, laboratories, waste storage facilities, enrichment facilities, medical facilities, and other installations relevant to the nuclear and radiological domain.
+
+Facilities are maintained as Master Data to support consistent identification, geographical analysis, and operational reporting across multiple documents and events.
+
+---
+
+## Evidence
+
+Derived from:
+
+- GNRIP-003 Source Assessment & Data Profiling
+
+Current Version 1 sources regularly reference facilities involved in operational events, regulatory oversight, emergency response, research, and international cooperation.
+
+Future integrations such as INES and other international datasets are expected to expand facility coverage.
+
+---
+
+## Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| facility_id | INTEGER | No | Primary Key |
+| facility_name | TEXT | No | Official facility name |
+| facility_type_id | INTEGER | No | Foreign Key to Facility Type |
+| organization_id | INTEGER | Yes | Foreign Key to Organization |
+| country_id | INTEGER | No | Foreign Key to Country |
+
+---
+
+## Relationships
+
+Facility (Many) --------< Event_Facility >-------- Event (Many)
+
+Organization (1) --------< Facility (Many)
+
+Country (1) --------< Facility (Many)
+
+Facility (1) --------< Event (Many)
+
+---
+
+## Business Rules
+
+- Every Facility shall belong to exactly one Facility Type.
+- Every Facility shall belong to exactly one Country.
+- A Facility may belong to one Organization.
+- Organization association may be NULL when ownership or operation is unknown.
+- Facility names shall be unique within a Country.
+
+---
+
+## Approval Status
+
+**Approved – Version 1**
+
+---
+
+## 4.3.4 Material
+
+## Purpose
+
+Represents specific nuclear and radiological materials referenced within published documents or operational events.
+
+Materials are the fundamental substances discussed within the intelligence domain and are maintained as Master Data to support consistent identification, querying, and analysis.
+
+Examples include:
+
+- Uranium-235
+- Uranium-238
+- Plutonium-239
+- Cesium-137
+- Cobalt-60
+- Iridium-192
+- Americium-241
+- MOX Fuel
+
+---
+
+## Evidence
+
+Derived from:
+
+- GNRIP-003 Source Assessment & Data Profiling
+- IAEA Nuclear Security Glossary (2020)
+- IAEA Safety Glossary (2018)
+
+Current and planned sources reference a wide range of nuclear and radiological materials associated with safeguards, security, medicine, industry, emergency response, and research.
+
+---
+
+## Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| material_id | INTEGER | No | Primary Key |
+| material_name | TEXT | No | Official material name |
+| material_class_id | INTEGER | No | Foreign Key to Material Class |
+
+---
+
+## Relationships
+
+Material Class (1) --------< Material (Many)
+
+Document (Many) --------< Document_Material >-------- Material (Many)
+
+Event (Many) --------< Event_Material >-------- Material (Many)
+
+---
+
+## Business Rules
+
+- Every Material shall belong to exactly one Material Class.
+- Material names shall be unique.
+- A Material may be referenced by multiple Documents.
+- A Material may be associated with multiple Events.
+- Materials represent substances rather than operational objects or packaging.
+
+---
+
+## Approval Status
+
+**Approved – Version 1**
+
+---
+
+## 4.4 Operational Data
 
 ## Purpose
 
@@ -721,80 +1217,262 @@ Unlike Core Domain Entities and Master Data, Operational Data supports ETL workf
 
 The following operational entities are included within the Version 1 logical data model:
 
-- Collection Log *(Under Design)*
+**Collection Log (Approved – Version 1)**
 
 ---
 
-# 4.4.1 Collection Log
-
-*Under Design*
-
----
-
-# 4.5 Relationship Tables
+## 4.4.1 Collection Log
 
 ## Purpose
 
-Relationship Tables implement many-to-many relationships between entities while maintaining database normalization and referential integrity.
+Represents the operational record of a data collection activity performed against an external information source.
 
-These tables contain relationship mappings only and do not represent standalone business concepts.
-
-The following relationship tables are included within the Version 1 logical data model:
-
-- Document_Event *(Under Design)*
-- Document_Category *(Under Design)*
-- Document_Country *(Under Design)*
-- Document_Organization *(Under Design)*
-
-Additional relationship tables may be introduced where justified by future analytical requirements.
+Collection Logs provide traceability for ETL operations and support auditing, troubleshooting, and data governance without storing business or intelligence data.
 
 ---
 
-# 4.5.1 Document_Event
+## Evidence
 
-*Under Design*
+Derived from:
 
----
+- GNRIP-003 Source Assessment & Data Profiling
 
-# 4.5.2 Document_Category
-
-*Under Design*
+The platform performs periodic collection of publications from multiple authoritative sources. Recording collection activities supports data integrity, operational monitoring, and reproducibility.
 
 ---
 
-# 4.5.3 Document_Country
+## Attributes
 
-*Under Design*
-
----
-
-# 4.5.4 Document_Organization
-
-*Under Design*
-
----
-
-# 6. Design Principles
-
-The Data Dictionary follows the engineering principles established for the project.
-
-1. Architecture before implementation.
-2. Store facts, derive insights.
-3. Apply the Three-Query Rule to every attribute.
-4. Separate domain data from operational metadata.
-5. Normalize where supported by evidence.
-6. Design for extensibility without speculative schema.
-7. Document architectural decisions before implementation.
-8. Controlled vocabularies shall be implemented using normalized reference entities rather than free-text attributes.
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| collection_id | INTEGER | No | Primary Key |
+| source_id | INTEGER | No | Foreign Key to Source |
+| collection_timestamp | DATETIME | No | Date and time of the collection run |
+| documents_discovered | INTEGER | No | Number of documents identified |
+| documents_collected | INTEGER | No | Number of documents successfully collected |
+| documents_failed | INTEGER | No | Number of collection failures |
+| file_format_id | INTEGER | No | Foreign Key to File Format |
 
 ---
 
-# 7. Document Approval
+## Relationships
 
-**Prepared By**
+Source (1) --------< Collection Log (Many)
 
-Josiah C. Mathew
+File Format (1) --------< Collection Log (Many)
 
-**Approval Status**
+---
 
-Draft
+## Business Rules
+
+- Every Collection Log shall reference exactly one Source.
+- Collection Logs represent operational metadata and shall not contain intelligence data.
+- Collection statistics shall describe a single execution of the collection process.
+- Collection Logs shall be immutable once created.
+- Every Collection Log shall reference exactly one File Format.
+
+---
+
+## Approval Status
+
+**Approved – Version 1**
+
+---
+
+## 4.5 Relationship Tables
+
+## Purpose
+
+Relationship Tables implement many-to-many relationships between entities while preserving database normalization and referential integrity.
+
+Unlike Core Domain, Master Data, and Reference Data entities, Relationship Tables do not represent standalone business concepts. Their sole purpose is to associate records that may legitimately have multiple relationships.
+
+Relationship Tables contain only foreign keys unless future analytical requirements justify additional relationship-specific attributes.
+
+---
+
+## Design Principles
+
+Relationship Tables shall adhere to the following principles:
+
+- Composite Primary Keys shall be used unless a surrogate key is justified.
+- Each foreign key shall reference an existing parent entity.
+- Relationship Tables shall not duplicate business attributes stored elsewhere.
+- Additional attributes shall only be introduced when they describe the relationship itself rather than either parent entity.
+
+---
+
+## 4.5.1 Document_Event
+
+### Purpose
+
+Associates published Documents with the operational Events they describe.
+
+### Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| document_id | INTEGER | No | Foreign Key to Document |
+| event_id | INTEGER | No | Foreign Key to Event |
+
+### Business Rules
+
+- Composite Primary Key: (document_id, event_id)
+- A Document may reference multiple Events.
+- An Event may be described by multiple Documents.
+
+---
+
+## 4.5.2 Document_Category
+
+### Purpose
+
+Associates Documents with one or more analytical Categories.
+
+### Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| document_id | INTEGER | No | Foreign Key to Document |
+| category_id | INTEGER | No | Foreign Key to Category |
+
+### Business Rules
+
+- Composite Primary Key: (document_id, category_id)
+- A Document may belong to multiple Categories.
+- A Category may classify multiple Documents.
+
+---
+
+## 4.5.3 Document_Country
+
+### Purpose
+
+Associates Documents with Countries referenced within their content.
+
+### Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| document_id | INTEGER | No | Foreign Key to Document |
+| country_id | INTEGER | No | Foreign Key to Country |
+
+### Business Rules
+
+- Composite Primary Key: (document_id, country_id)
+- A Document may reference multiple Countries.
+- A Country may appear in multiple Documents.
+
+---
+
+## 4.5.4 Document_Organization
+
+### Purpose
+
+Associates Documents with Organizations referenced within their content.
+
+### Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| document_id | INTEGER | No | Foreign Key to Document |
+| organization_id | INTEGER | No | Foreign Key to Organization |
+
+### Business Rules
+
+- Composite Primary Key: (document_id, organization_id)
+- A Document may reference multiple Organizations.
+- An Organization may appear in multiple Documents.
+
+---
+
+## 4.5.5 Document_Material
+
+### Purpose
+
+Associates Documents with Materials referenced within their content.
+
+### Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| document_id | INTEGER | No | Foreign Key to Document |
+| material_id | INTEGER | No | Foreign Key to Material |
+
+### Business Rules
+
+- Composite Primary Key: (document_id, material_id)
+- A Document may reference multiple Materials.
+- A Material may appear in multiple Documents.
+
+---
+
+## 4.5.6 Event_Facility
+
+### Purpose
+
+Associates operational Events with the Facilities involved.
+
+### Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| event_id | INTEGER | No | Foreign Key to Event |
+| facility_id | INTEGER | No | Foreign Key to Facility |
+
+### Business Rules
+
+- Composite Primary Key: (event_id, facility_id)
+- An Event may involve multiple Facilities.
+- A Facility may participate in multiple Events.
+
+---
+
+## 4.5.7 Event_Material
+
+### Purpose
+
+Associates operational Events with the Materials involved.
+
+### Attributes
+
+| Field | Type | Null | Description |
+|------|------|------|-------------|
+| event_id | INTEGER | No | Foreign Key to Event |
+| material_id | INTEGER | No | Foreign Key to Material |
+
+### Business Rules
+
+- Composite Primary Key: (event_id, material_id)
+- An Event may involve multiple Materials.
+- A Material may be associated with multiple Events.
+
+---
+
+# 5. Design Principles
+
+The GNRIP Data Dictionary has been developed in accordance with the project's architectural and data governance principles.
+
+1. Architecture shall precede implementation.
+2. Store facts; derive insights through analysis.
+3. Apply the Three-Query Rule when evaluating every attribute.
+4. Separate business data from operational metadata.
+5. Normalize entities and relationships where supported by evidence.
+6. Design for extensibility without introducing speculative schema.
+7. Record architectural decisions before implementation.
+8. Represent controlled vocabularies using normalized Reference Data entities rather than free-text attributes.
+9. Align domain terminology with authoritative standards wherever applicable (e.g., ISO, IAEA).
+10. Preserve referential integrity through explicit entity relationships and relationship tables.
+
+---
+
+# 6. Document Approval
+
+| Item | Value |
+|------|-------|
+| Document | GNRIP-004 Data Dictionary |
+| Version | 1.0 |
+| Prepared By | Josiah C. Mathew |
+| Reviewed By | — |
+| Approval Status | Approved |
+| Last Updated | 2026-07-01 |
