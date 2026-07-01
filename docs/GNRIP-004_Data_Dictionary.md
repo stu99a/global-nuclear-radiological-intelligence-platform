@@ -16,7 +16,7 @@ It specifies the entities, attributes, relationships, and business rules require
 |------|-------|
 | Document | Data Dictionary |
 | Document ID | GNRIP-004 |
-| Version | 0.1 |
+| Version | 1.0 |
 | Status | Approved |
 | Author | Josiah C. Mathew |
 | Last Updated | 2026-07-01 |
@@ -28,7 +28,7 @@ It specifies the entities, attributes, relationships, and business rules require
 
 | Version | Date | Description | Author |
 |----------|------|-------------|--------|
-| 0.1 | YYYY-MM-DD | Initial Draft | Josiah C. Mathew |
+| 1.0 | 2026-07-01 | Approved | Josiah C. Mathew |
 
 ---
 
